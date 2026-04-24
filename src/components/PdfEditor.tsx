@@ -86,7 +86,7 @@ export default function PdfEditor() {
       canvas.width = vp.width;
       canvas.height = vp.height;
 
-      await p.render({ canvasContext: canvas.getContext("2d")!, viewport: vp }).promise;
+      await p.render({ canvasContext: canvas.getContext("2d")!, viewport: vp, canvas }).promise;
       if (cancelled) return;
 
       const tc = await p.getTextContent();
@@ -190,7 +190,7 @@ export default function PdfEditor() {
       }
 
       const out = await doc.save();
-      const url = URL.createObjectURL(new Blob([out], { type: "application/pdf" }));
+      const url = URL.createObjectURL(new Blob([out.buffer as ArrayBuffer], { type: "application/pdf" }));
       const a = document.createElement("a");
       a.href = url;
       a.download = file!.name.replace(/\.pdf$/i, "-edited.pdf");
