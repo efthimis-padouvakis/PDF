@@ -62,7 +62,8 @@ export default function PdfEditor() {
     setFile(f);
     const bytes = new Uint8Array(await f.arrayBuffer());
     setRawBytes(bytes);
-    const doc = await pdfjs.getDocument({ data: bytes }).promise;
+    // give pdfjs a copy — it may transfer/consume the underlying ArrayBuffer
+    const doc = await pdfjs.getDocument({ data: bytes.slice() }).promise;
     setPdfjsDoc(doc);
     setPageCount(doc.numPages);
     setPage(0);
@@ -329,7 +330,7 @@ export default function PdfEditor() {
         >
           ← Prev
         </button>
-        <span className="text-gray-600 min-w-[80px] text-center">{page + 1} / {pageCount}</span>
+        <span className="text-gray-600 min-w-20 text-center">{page + 1} / {pageCount}</span>
         <button
           onClick={() => setPage(p => Math.min(pageCount - 1, p + 1))}
           disabled={page === pageCount - 1}
