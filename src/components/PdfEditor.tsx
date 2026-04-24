@@ -190,12 +190,19 @@ export default function PdfEditor() {
       }
 
       const out = await doc.save();
-      const url = URL.createObjectURL(new Blob([out.buffer as ArrayBuffer], { type: "application/pdf" }));
+      // slice the buffer to exact bounds — out.buffer may have excess capacity
+      const blob = new Blob([(out.buffer as ArrayBuffer).slice(out.byteOffset, out.byteOffset + out.byteLength)], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = file!.name.replace(/\.pdf$/i, "-edited.pdf");
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error("Save failed:", err);
+      alert("Failed to save PDF: " + String(err));
     } finally {
       setSaving(false);
     }
@@ -355,8 +362,8 @@ export default function PdfEditor() {
                 style={{ position: "absolute", left: t.x, top: t.y, width: t.w, height: t.h, minWidth: 8 }}
                 className={`cursor-text ${
                   t.replacement !== null
-                    ? "bg-white ring-1 ring-blue-400 rounded"
-                    : "hover:ring-1 hover:ring-blue-300 hover:rounded"
+                    ? "ring-1 ring-blue-400 rounded"
+                    : ""
                 }`}
                 onClick={e => e.stopPropagation()}
                 onDoubleClick={e => {
@@ -377,8 +384,8 @@ export default function PdfEditor() {
                     }
                     onBlur={() => setEditingId(prev => prev === t.id ? null : prev)}
                     onClick={e => e.stopPropagation()}
-                    className="w-full h-full bg-transparent border-none outline-none p-0 m-0"
-                    style={{ fontSize: t.h * 0.85, lineHeight: 1 }}
+                    className="w-full h-full border-none outline-none p-0 m-0"
+                    style={{ fontSize: t.h * 0.85, lineHeight: 1, color: "#000", backgroundColor: "#fff" }}
                   />
                 )}
               </div>
